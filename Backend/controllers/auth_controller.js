@@ -6,10 +6,26 @@ import User from '../models/user_model.js';
 
 
 export const signup = async (req, res) => {
-    const { name, email, password, profilePicture } = req.body;
+    const { name, email, password, profilePicture,role,phone,address } = req.body;
     try {
         if (!email || !name || !password) {
             return res.status(400).json({ message: "All fields are required" });
+        }
+        if (!role) {
+            return res.status(400).json({ message: 'Choose your role to procced with the SignUp' });
+        }
+        const roleLower = role.toLowerCase();
+        if (!["user", "owner"].includes(roleLower)) {
+            return res.status(400).json({ message: "Invalid role selected" });
+        }
+
+        //if the user wants to be owner he have to give his phone no,addrress
+        if (roleLower === "owner") {
+            if (!phone || !address) {
+                return res.status(400).json({
+                    message: "Phone number and address are required for owners",
+                });
+            }
         }
 
         //password must be of size greater than 6
@@ -39,17 +55,24 @@ export const signup = async (req, res) => {
             profilePictureUrl = `https://avatar.iran.liara.run/public/${idx}.png`;
         }
 
+        //if the person is owner == some additional features must be asked like == phone number ,address
 
         const newUser = new User({
             name,
             email,
             password: hashedPassword,
             profilePic: profilePictureUrl,
+            role: roleLower,
+            ...(roleLower === "owner" && { phone, address }) // conditional fields(if owner save otherwise not)
         })
 
         if (newUser) {
             //creating jwt token -- valid up to 7 days
-            const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET_KEY, {
+            const token = jwt.sign({
+                userId: newUser._id,
+                email: newUser.email,
+                role:newUser.role
+            }, process.env.JWT_SECRET_KEY, {
                 expiresIn: "7d",
             });
 
@@ -94,7 +117,11 @@ export const login = async (req, res) => {
         if (!isPasswordCorrect) return res.status(401).json({ message: "Invalid email or password" });
 
         //creating jwt token
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET_KEY, {
+        const token = jwt.sign({
+            userId: user._id,
+            email: user.email,
+            role: user.role
+        }, process.env.JWT_SECRET_KEY, {
             expiresIn: "7d",
         });
 
@@ -110,10 +137,11 @@ export const login = async (req, res) => {
             name: user.name,
             email: user.email,
             profilePic: user.profilePic,
+            role: user.role,
             token,
         });
     }catch (error) {
-        console.log("error in login controller", error.message);
+        console.log("error in login controller:", error.message);
         return res.status(500).json({ message: "Internal server error" });
     }
 
@@ -134,6 +162,7 @@ export const logout = (req, res) => {
 export const checkAuth = (req, res) => {
     try {
         if (req.user) {
+            //isAuthenticated is extra will be used in the fronted as you like
             res.status(200).json({ isAuthenticated: true, user: req.user });
         } else {
             res.status(200).json({ isAuthenticated: false });
@@ -144,7 +173,7 @@ export const checkAuth = (req, res) => {
     }
 };
 
-//do it later
+//do it later -- 
 export const updateProfile = async (req, res) => {
     
 }
