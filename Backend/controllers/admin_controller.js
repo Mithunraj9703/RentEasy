@@ -7,7 +7,6 @@ export const getAllListingsToApprove = async (req, res) => {
     try {
         const listings = await Listing.find({ status: "pending" });
         res.status(200).json({
-            success: true,
             listings
         })
     } catch (error) {
@@ -23,7 +22,6 @@ export const getAllUsers = async (req, res) => {
             .sort({ createdAt: -1 })
 
         return res.status(200).json({
-            success: true,
             users
         })
     } catch (error) {
@@ -39,7 +37,6 @@ export const getAllOwners = async (req, res) => {
             .sort({ createdAt: -1 })
 
         return res.status(200).json({
-            success: true,
             users
         })
     } catch (error) {
@@ -58,13 +55,11 @@ export const approveListing = async (req, res) => {
 
         if (!listing) {
             return res.status(404).json({
-                success: false,
                 message: 'Listing not found or already moderated'
             })
         }
 
         return res.status(200).json({
-            success: true,
             message: 'Listing approved successfully',
             listing
         })
@@ -72,7 +67,6 @@ export const approveListing = async (req, res) => {
         console.error('Error approving listing:', error.message)
 
         return res.status(500).json({
-            success: false,
             message: 'Internal Server Error'
         })
     }
@@ -90,13 +84,11 @@ export const rejectListing = async (req, res) => {
 
         if (!listing) {
             return res.status(404).json({
-                success: false,
                 message: 'Listing not found or already moderated'
             })
         }
 
         return res.status(200).json({
-            success: true,
             message: 'Listing rejected successfully',
             listing
         })
@@ -104,7 +96,6 @@ export const rejectListing = async (req, res) => {
         console.error('Error rejecting listing:', error)
 
         return res.status(500).json({
-            success: false,
             message: 'Internal Server Error'
         })
     }

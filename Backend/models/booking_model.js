@@ -36,6 +36,7 @@ const bookingSchema = new mongoose.Schema(
       default: "pending",
     },
 
+    //add paynow or payonreach feature
     paymentStatus: {
       type: String,
       enum: ["pending", "paid", "failed"],

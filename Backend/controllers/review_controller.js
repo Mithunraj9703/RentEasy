@@ -18,7 +18,6 @@ export const getaAllReviews = async (req, res) => {
 
         const listingReviews = listing.reviews;
         res.status(200).json({
-            success: true,
             reviews: listingReviews
         });
 
@@ -39,7 +38,6 @@ export const createReview = async (req, res) => {
 
         if (!text || !text.trim()) {
             return res.status(400).json({
-                success: false,
                 message: "Review text cannot be empty",
             });
         }
@@ -47,7 +45,6 @@ export const createReview = async (req, res) => {
         const listing = await Listing.findById(listingId);
         if (!listing) {
             return res.status(404).json({
-                success: false,
                 message: "Listing not found",
             });
         }
@@ -65,7 +62,6 @@ export const createReview = async (req, res) => {
         await listing.save();
 
         res.status(201).json({
-            success: true,
             review,
         });
 
@@ -83,14 +79,14 @@ export const deleteReview = async (req, res) => {
         const { id: listingId, reviewId } = req.params;
 
         const listing = await Listing.findById(listingId);
-        if (!listing) return res.status(404).json({ success: false, message: "Listing not found" });
+        if (!listing) return res.status(404).json({  message: "Listing not found" });
 
         const review = await Review.findById(reviewId);
-        if (!review) return res.status(404).json({ success: false, message: "Review not found" });
+        if (!review) return res.status(404).json({ message: "Review not found" });
 
         // Only the review owner can delete
         if (review.userId.toString() !== req.user.id) {
-            return res.status(403).json({ success: false, message: "Not authorized to delete this review" });
+            return res.status(403).json({ message: "Not authorized to delete this review" });
         }
 
         listing.reviews.pull(reviewId);
@@ -98,7 +94,7 @@ export const deleteReview = async (req, res) => {
 
         await review.deleteOne();
 
-        res.status(200).json({ success: true, message: "Review deleted" });
+        res.status(200).json({ message: "Review deleted" });
     } catch (error) {
         console.log("Error in creating review", err.message);
         res.status(500).json({

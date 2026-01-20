@@ -14,7 +14,6 @@ export const getAllListings = async (req, res) => {
             status: "approved"
         });
         return res.status(200).json({
-            success: true,
             listings
         })
     } catch (error) {
@@ -34,7 +33,6 @@ export const getListingById = async (req, res) => {
             });
         }
         res.status(200).json({
-            success: true,
             currListing,
         });
     } catch (error) {
@@ -79,14 +77,12 @@ export const searchListings = async (req, res) => {
             }
 
             return res.status(200).json({
-                success: true,
                 searchMatches: availableListings,
             });
         }
 
         // No dates → return all matches
         res.status(200).json({
-            success: true,
             searchMatches: listings,
         });
 
@@ -133,7 +129,6 @@ export const createListing = async (req, res) => {
         });
 
         res.status(201).json({
-            success: true,
             listing: newListing,
         });
     } catch (error) {
@@ -153,13 +148,12 @@ export const updateListing = async (req, res) => {
         // Check if listing exists
         const listing = await Listing.findById(listingId);
         if (!listing) {
-            return res.status(404).json({ success: false, message: "Listing not found" });
+            return res.status(404).json({ message: "Listing not found" });
         }
 
         //Check if the logged-in user is the owner
         if (listing.owner.toString() !== userId) {
             return res.status(403).json({
-                success: false,
                 message: "You are not authorized to update this listing",
             });
         }
@@ -223,7 +217,6 @@ export const updateListing = async (req, res) => {
         const updatedListing = await listing.save();
 
         res.status(200).json({
-            success: true,
             message: requiresReapproval
                 ? "Listing updated and sent for admin re-approval"
                 : "Listing updated successfully",
@@ -233,7 +226,6 @@ export const updateListing = async (req, res) => {
     } catch (error) {
         console.error("Error updating listing:", error);
         res.status(500).json({
-            success: false,
             message: "Server error while updating listing",
         });
     }
