@@ -1,4 +1,6 @@
-{
+ 
+ 
+ {
   "name": "backend",
   "version": "1.0.0",
   "description": "rent-easy backend",
@@ -24,4 +26,4 @@
   "devDependencies": {
     "nodemon": "^3.1.10"
   }
-}
+ }

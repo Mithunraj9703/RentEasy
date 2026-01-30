@@ -1,20 +1,27 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import Header from "./pages/Header";
+import Hero from "./pages/Hero";
+import Footer from "./pages/Footer";
+import Layout from "./Layout";
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <Layout>
+        <Routes>
+          {/* Home Page */}
+          <Route path="/" element={<Hero />} />
 
-        <Route path="/" element={<Navigate to="/login" />} />
+          {/* Auth Pages */}
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
 
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/login" element={<Login />} />
-
-        <Route path="*" element={<h1>404 Not Found</h1>} />
-
-      </Routes>
+          {/* 404 */}
+          <Route path="*" element={<h1>404 Not Found</h1>} />
+        </Routes>
+      </Layout>
     </BrowserRouter>
   );
 }
