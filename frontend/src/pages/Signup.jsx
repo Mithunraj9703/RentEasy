@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { signup } from "../api/auth";
-
+import { useNavigate } from "react-router-dom";
 function Signup() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -22,6 +23,7 @@ function Signup() {
     } catch (err) {
       alert(err.response?.data?.message || "Error");
     }
+    navigate("/")
   };
 
   return (

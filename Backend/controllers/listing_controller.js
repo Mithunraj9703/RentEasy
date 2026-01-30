@@ -95,7 +95,7 @@ export const searchListings = async (req, res) => {
 };
 
 
-//by the owner that will create the listing it will be save to the databse and shown to the admin 
+//by the owner that will create the listing it will be save to the database and shown to the admin 
 //dashboard then the admin will either select or deselect it
 export const createListing = async (req, res) => {
     try {
