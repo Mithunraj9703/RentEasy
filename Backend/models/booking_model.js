@@ -37,6 +37,11 @@ const bookingSchema = new mongoose.Schema(
     },
 
     //add paynow or payonreach feature
+    paymentMethod: {
+      type: String,
+      enum: ["pay_on_reach", "pay_now"],
+      required:true,
+    },
     paymentStatus: {
       type: String,
       enum: ["pending", "paid", "failed"],
