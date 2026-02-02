@@ -6,7 +6,9 @@ import User from '../models/user_model.js';
 
 
 export const signup = async (req, res) => {
-    const { name, email, password, profilePicture, role, phone, address } = req.body;
+    const { name, email, password, role } = req.body;
+    const profilePicture = req.file;
+
     try {
         if (!email || !name || !password) {
             return res.status(400).json({ message: "All fields are required" });
@@ -17,15 +19,6 @@ export const signup = async (req, res) => {
         const roleLower = role.toLowerCase();
         if (!["user", "owner"].includes(roleLower)) {
             return res.status(400).json({ message: "Invalid role selected" });
-        }
-
-        //if the user wants to be owner he have to give his phone no,addrress
-        if (roleLower === "owner") {
-            if (!phone || !address) {
-                return res.status(400).json({
-                    message: "Phone number and address are required for owners",
-                });
-            }
         }
 
         //password must be of size greater than 6
@@ -48,7 +41,14 @@ export const signup = async (req, res) => {
         //for profile picture
         let profilePictureUrl;
         if (profilePicture) {
-            const uploadResponse = await cloudinary.uploader.upload(profilePicture);
+            const uploadResponse = await new Promise((resolve, reject) => {
+                cloudinary.uploader
+                    .upload_stream({ folder: "profiles" }, (err, result) => {
+                        if (err) reject(err);
+                        else resolve(result);
+                    })
+                    .end(profilePicture.buffer);
+            });
             profilePictureUrl = uploadResponse.secure_url;
         } else {
             const idx = Math.floor(Math.random() * 100) + 1; // generate a num between 1-100
@@ -62,8 +62,7 @@ export const signup = async (req, res) => {
             email,
             password: hashedPassword,
             profilePic: profilePictureUrl,
-            role: roleLower,
-            ...(roleLower === "owner" && { phone, address }) // conditional fields(if owner save otherwise not)
+            role: roleLower, // conditional fields(if owner save otherwise not)
         })
 
         if (newUser) {
@@ -98,6 +97,52 @@ export const signup = async (req, res) => {
     } catch (error) {
         console.log("Error in signup controller:", error.message);
         res.status(500).json({ message: "Internal server error" });
+    }
+}
+
+export const onBoarding = async (req, res) => {
+    const { name, phone, address } = req.body;
+    const userId = req.user._id;
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "Signup first to onboard" });
+        }
+
+        if (user.role !== "owner") {
+            return res.status(403).json({ message: "Only owners can complete onboarding" });
+        }
+        if (!name || !phone || !address) {
+            return res.status(400).json({
+                message: "All fields are required",
+                missingFields: [
+                    !name?.trim() && "name",
+                    !phone?.trim() && "phone",
+                    !address?.trim() && "address",
+                ].filter(Boolean),
+            });
+        }
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            {
+                name,
+                phone,
+                address,
+            },
+            { new: true }
+        ).select("-password");
+
+        return res.status(200).json({
+            message: "Onboarding completed successfully",
+            user: updatedUser,
+        });
+
+    } catch (error) {
+        console.error("Onboarding error:", error);
+        return res.status(500).json({
+            message: "Internal server error",
+        });
     }
 }
 
