@@ -1,99 +1,180 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { signup } from "../api/auth";
 import { useNavigate } from "react-router-dom";
+
 function Signup() {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
-    profilePicture: ""
+    role: "user",
+    phone: "",
+    address: "",
   });
+
+  const [profilePicture, setProfilePicture] = useState("");
+  const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Convert image to Base64
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfilePicture(reader.result);
+      setPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const res = await signup(form);
-      alert("Signup successful");
-      console.log(res.data);
-    } catch (err) {
-      alert(err.response?.data?.message || "Error");
+
+    // Frontend validation
+    if (!form.name || !form.email || !form.password) {
+      return alert("All fields are required");
     }
-    navigate("/")
+
+    if (form.password.length < 6) {
+      return alert("Password must be at least 6 characters");
+    }
+
+    if (form.role === "owner" && (!form.phone || !form.address)) {
+      return alert("Phone and address required for owners");
+    }
+
+    setLoading(true);
+
+    try {
+      const payload = {
+        ...form,
+        profilePicture, // base64 string
+      };
+
+      await signup(payload);
+      alert("Signup successful");
+      navigate("/");
+    } catch (err) {
+      alert(err.response?.data?.message || "Signup failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] p-4">
-      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md border border-gray-200">
-        
-        <h2 className="text-3xl font-semibold text-gray-800 text-center mb-6">
-          Create Your Account
+      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md border">
+
+        <h2 className="text-3xl font-semibold text-center mb-6">
+          Create Account
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Full Name</label>
-            <input
-              type="text"
-              name="name"
-              placeholder="John Doe"
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-400 focus:outline-none"
-            />
+        {/* Profile Picture */}
+        <div className="flex justify-center mb-6">
+          <div
+            onClick={() => fileInputRef.current.click()}
+            className="w-28 h-28 rounded-full border-2 border-dashed flex items-center justify-center cursor-pointer overflow-hidden"
+          >
+            {preview ? (
+              <img src={preview} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-gray-400">Add Photo</span>
+            )}
           </div>
 
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Email</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="john@example.com"
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-400 focus:outline-none"
-            />
+          <input
+            type="file"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleImageChange}
+            className="hidden"
+          />
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+
+          <input
+            name="name"
+            placeholder="Full Name"
+            onChange={handleChange}
+            className="w-full border p-3 rounded-xl"
+          />
+
+          <input
+            name="email"
+            type="email"
+            placeholder="Email"
+            onChange={handleChange}
+            className="w-full border p-3 rounded-xl"
+          />
+
+          <input
+            name="password"
+            type="password"
+            placeholder="Password"
+            onChange={handleChange}
+            className="w-full border p-3 rounded-xl"
+          />
+
+          {/* Role */}
+          <div className="flex gap-6">
+            <label>
+              <input
+                type="radio"
+                name="role"
+                value="user"
+                checked={form.role === "user"}
+                onChange={handleChange}
+              /> User
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="role"
+                value="owner"
+                checked={form.role === "owner"}
+                onChange={handleChange}
+              /> Owner
+            </label>
           </div>
 
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Password</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="********"
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-400 focus:outline-none"
-            />
-          </div>
+          {/* Owner-only fields */}
+          {form.role === "owner" && (
+            <>
+              <input
+                name="phone"
+                placeholder="Phone Number"
+                onChange={handleChange}
+                className="w-full border p-3 rounded-xl"
+              />
 
-          <div>
-            <label className="block text-sm text-gray-600 mb-1">Profile Picture URL</label>
-            <input
-              type="text"
-              name="profilePicture"
-              placeholder="Optional"
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-red-400 focus:outline-none"
-            />
-          </div>
+              <input
+                name="address"
+                placeholder="Address"
+                onChange={handleChange}
+                className="w-full border p-3 rounded-xl"
+              />
+            </>
+          )}
 
           <button
-            type="submit"
-            className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl text-lg font-medium transition-all"
+            disabled={loading}
+            className="w-full bg-red-500 text-white py-3 rounded-xl text-lg"
           >
-            Sign Up
+            {loading ? "Creating account..." : "Sign Up"}
           </button>
-        </form>
 
-        <p className="text-center text-gray-600 mt-5">
-          Already have an account?  
-          <a href="/login" className="text-red-500 font-medium hover:underline">
-            Log in
-          </a>
-        </p>
+        </form>
       </div>
     </div>
   );
