@@ -14,6 +14,7 @@ export function AuthProvider({ children }) {
     // Firebase listener (runs on login, logout, refresh)
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      console.log("Auth State Changed:", currentUser);
       setLoading(false);
     });
 

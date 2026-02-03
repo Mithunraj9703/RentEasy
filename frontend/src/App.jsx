@@ -5,6 +5,7 @@ import Header from "./pages/Header";
 import Hero from "./pages/Hero";
 import Footer from "./pages/Footer";
 import Layout from "./Layout";
+import FireBaseLogin from "./pages/FireBaseLogin";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           {/* Auth Pages */}
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+           <Route path="/google_login" element={<FireBaseLogin />} />
 
           {/* 404 */}
           <Route path="*" element={<h1>404 Not Found</h1>} />

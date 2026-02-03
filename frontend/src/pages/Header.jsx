@@ -32,7 +32,7 @@ const Header = () => {
 </button>
 
 <button
-  onClick={() => navigate("/signup")}
+  onClick={() => navigate("/google_login")}
   className="hidden md:block text-sm font-medium hover:underline"
 >
   Sign up

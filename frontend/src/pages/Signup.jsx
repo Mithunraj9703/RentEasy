@@ -1,14 +1,17 @@
 import { useState, useRef } from "react";
 import { signup } from "../api/auth";
 import { useNavigate } from "react-router-dom";
-
+import { getAuth } from "firebase/auth";
 function Signup() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-
+  const auth = getAuth();
+  if(auth){
+    console.log("Current User in Signup:", auth.currentUser?.displayName);
+  }
   const [form, setForm] = useState({
-    name: "",
-    email: "",
+    name: auth?.currentUser?.displayName || "",
+    email: auth?.currentUser?.email || "",
     password: "",
     role: "user",
     phone: "",
@@ -103,6 +106,7 @@ function Signup() {
             name="name"
             placeholder="Full Name"
             onChange={handleChange}
+            value={form.name}
             className="w-full border p-3 rounded-xl"
           />
 
@@ -111,6 +115,7 @@ function Signup() {
             type="email"
             placeholder="Email"
             onChange={handleChange}
+            value={form.email}
             className="w-full border p-3 rounded-xl"
           />
 
