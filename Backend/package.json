@@ -10,7 +10,7 @@
     "seed:listings": "node seed/listing.seed.js",
     "delete:listings": "node seed/delteListing.js"
   },
-  "author": "aks mithun",
+  "author": "aks mithun amar neel",
   "license": "ISC",
   "dependencies": {
     "bcryptjs": "^3.0.2",

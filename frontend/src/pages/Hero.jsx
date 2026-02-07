@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+import { getListing, searchListing } from "../api/listing";
+import { Search } from "lucide-react";
+
 function Hero() {
   const cards = [
     {
@@ -29,6 +33,54 @@ function Hero() {
       image: "https://images.unsplash.com/photo-1505691723518-36a5ac3be353",
     },
   ];
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [searchResult, setSearchResult] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+
+   const generateSuggestions = () => {
+    if (!listings || listings.length === 0) return;
+
+    const shuffled = [...listings]
+      .sort(() => 0.5 - Math.random())
+      .slice(0, 5);
+
+    setSuggestions(shuffled);
+  };
+
+  const handleFocus = () => {
+    generateSuggestions();
+    setShowDropdown(true);
+  };
+
+  const handleSearch = async() => {
+    if (!searchText.trim()) return;
+    const res = await searchListing(searchText);
+    console.log(res.searchMatches || []);
+    setSearchResult(res?.searchMatches)// backend call handled elsewhere
+    setShowDropdown(false);
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+
+        const data = await getListing();
+
+        console.log("API response:", data);
+        setListings(data?.listings || []);
+
+      } catch (err) {
+        console.error("Error fetching listings:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData()
+  }, []);
 
   return (
     <section className="bg-gray-50">
@@ -42,52 +94,113 @@ function Hero() {
         </p>
 
         {/* 🔍 Search Box */}
-        <div className="mt-8 max-w-xl">
-          <div className="flex items-center  bg-white rounded-full shadow-md px-4 py-3">
-            <input
-              type="text"
-              placeholder="Search destinations"
-              className="flex-1 outline-none text-gray-700 placeholder-gray-400"
-            />
-            <button className="ml-3 bg-black text-white px-5 py-2 rounded-full hover:bg-gray-800">
-              Search
-            </button>
-          </div>
+        <div className="mt-8 max-w-xl relative">
+      
+      {/* Search Box */}
+      <div className="flex items-center bg-white rounded-full shadow-md px-4 py-3">
+        <input
+          type="text"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          onFocus={handleFocus}
+          placeholder="Search destinations"
+          className="flex-1 outline-none text-gray-700 placeholder-gray-400"
+        />
+
+        <button
+          onClick={handleSearch}
+          className="ml-3 bg-black text-white px-5 py-2 rounded-full hover:bg-gray-800"
+        >
+          <Search size={18} />
+        </button>
+      </div>
+
+      {/* Dropdown */}
+      {showDropdown && suggestions.length > 0 && (
+        <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-xl mt-2 z-50">
+          {suggestions.map((item, index) => (
+            <div
+              key={index}
+              onClick={() => {
+                setSearchText(item.address);
+                setShowDropdown(false);
+              }}
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+            >
+              {item.address}
+            </div>
+          ))}
         </div>
+      )}
+
+    </div>
       </div>
 
       {/* Cards Grid */}
-      <div className="mx-auto max-w-7xl px-6 pb-16 grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {cards.map((card, index) => (
-          <div
-            key={index}
-            className="cursor-pointer rounded-xl overflow-hidden hover:scale-105 transition-transform duration-300"
-          >
-            <img
-              src={card.image}
-              alt={card.title}
-              className="h-64 w-full object-cover"
-            />
+      <div >
+        <div className="mx-auto max-w-7xl px-6 pb-16">
 
-            <div className="pt-3">
-              <div className="flex justify-between items-center">
-                <h3 className="font-medium text-gray-900">
-                  {card.title}
-                </h3>
-                <span className="text-sm">⭐ {card.rating}</span>
-              </div>
+          {/* Loading State */}
+          {loading && (
+            <p className="text-center text-gray-500 py-10">
+              Loading listings...
+            </p>
+          )}
 
-              <p className="text-gray-500 text-sm">
-                {card.location}
-              </p>
+          {/* Empty State */}
+          {!loading && listings?.length === 0 && (
+            <p className="text-center text-gray-500 py-10">
+              No listings available
+            </p>
+          )}
 
-              <p className="mt-1 text-gray-900">
-                <span className="font-semibold">₹{card.price}</span> / night
-              </p>
+          {/* Listings Grid */}
+          {!loading && listings?.length > 0 && (
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {listings.map((listing) => (
+                <div
+                  key={listing._id}
+                  className="cursor-pointer rounded-xl overflow-hidden hover:scale-105 transition-transform duration-300 bg-white shadow"
+                >
+                  <img
+                    src={listing.images?.[0] || "https://images.unsplash.com/photo-1600585154340-be6161a56a0c"}
+                    alt={listing.title}
+                    className="h-64 w-full object-cover"
+                  />
+
+                  <div className="pt-3 px-2 pb-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-medium text-gray-900 truncate">
+                        {listing.title}
+                      </h3>
+
+                      {listing.available && (
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                          Available
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-gray-500 text-sm truncate">
+                      {listing.address}
+                    </p>
+
+                    <p className="mt-1 text-gray-900">
+                      <span className="font-semibold">₹{listing.rent}</span> / night
+                    </p>
+
+                    <p className="text-xs text-gray-400 capitalize mt-1">
+                      {listing.type} room
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        ))}
+          )}
+        </div>
+
       </div>
+
     </section>
   );
 }

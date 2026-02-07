@@ -49,7 +49,6 @@ export const searchListings = async (req, res) => {
         // Base filter (always apply)
         let query = {
             status: "approved",
-            isActive: true,
         };
 
         // If search word is provided, add address filter
@@ -75,12 +74,11 @@ export const searchListings = async (req, res) => {
                     availableListings.push(listing);
                 }
             }
-
+            console.log(availableListings);
             return res.status(200).json({
                 searchMatches: availableListings,
             });
         }
-
         // No dates → return all matches
         res.status(200).json({
             searchMatches: listings,

@@ -88,17 +88,18 @@ const Header = () => {
         cursor-pointer
       "
               >
-                <Menu size={18} />
+                {/* <Menu size={18} /> */}
 
                 {/* Avatar */}
+
+                {/* Name (hide on small screens) */}
+                <span className="hidden md:block text-[16px] font-medium text-gray-700 font-bold ">
+                  {user?.name}
+                  </span>
+                  <div className="border min-h-7 opacity-[0.5]"></div>
                 <div className="h-8 w-8 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs font-semibold">
                   {user?.name?.[0]?.toUpperCase() || "U"}
                 </div>
-
-                {/* Name (hide on small screens) */}
-                <span className="hidden md:block text-sm font-medium text-gray-700">
-                  {user?.name}
-                </span>
               </div>
             )}
 
