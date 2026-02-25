@@ -179,5 +179,5 @@ export const checkAuth = (req, res) => {
 
 //do it later -- 
 export const updateProfile = async (req, res) => {
-
+  
 }

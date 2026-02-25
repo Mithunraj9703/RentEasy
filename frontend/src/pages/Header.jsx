@@ -2,22 +2,11 @@ import { Menu, User } from "lucide-react";
 import React from 'react'
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { checkAuth } from "../api/auth";
-import { useEffect, useState } from "react";
+import { useUser } from "../context/UserContext";
 
 const Header = () => {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const fetchAuth = async () => {
-      const data = await checkAuth();
-      setIsAuthenticated(data.isAuthenticated);
-      setUser(data.user || null);
-    };
-    fetchAuth()
-  }, [])
+  const { user, isAuthenticated } = useUser();
   return (
     <>
       <header className="w-full border-b bg-white">

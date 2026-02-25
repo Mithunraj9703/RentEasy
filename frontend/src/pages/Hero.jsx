@@ -60,7 +60,7 @@ function Hero() {
   const handleSearch = async () => {
     if (!searchText.trim()) return;
     const res = await searchListing(searchText);
-    console.log(res.searchMatches || []);
+    // console.log(res.searchMatches || []);
     setSearchResult(res?.searchMatches)// backend call handled elsewhere
     setShowDropdown(false);
   };

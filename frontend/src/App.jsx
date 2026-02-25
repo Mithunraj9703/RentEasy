@@ -7,11 +7,28 @@ import Footer from "./pages/Footer";
 import Layout from "./Layout";
 import FireBaseLogin from "./pages/FireBaseLogin";
 import ListingDetails from "./pages/ListingDetails";
+import { useEffect, useState } from "react";
+import { UserProvider } from "./context/UserContext";
+import { checkAuth } from "./api/auth.jsx";
+
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [user, setUser] = useState(null);
+  
+  useEffect(() => {
+    const fetchAuth = async () => {
+      const data = await checkAuth();
+      setIsAuthenticated(data.isAuthenticated);
+      setUser(data.user || null);
+    };
+    fetchAuth()
+  }, []);
+
   return (
     <BrowserRouter>
-      <Layout>
+      <UserProvider value={{ isAuthenticated, user, setUser, setIsAuthenticated }}>
+      <Layout >
         <Routes>
           {/* Home Page */}
           <Route path="/" element={<Hero />} />
@@ -26,7 +43,8 @@ function App() {
           {/* 404 */}
           <Route path="*" element={<h1>404 Not Found</h1>} />
         </Routes>
-      </Layout>
+        </Layout>
+        </UserProvider>
     </BrowserRouter>
   );
 }
